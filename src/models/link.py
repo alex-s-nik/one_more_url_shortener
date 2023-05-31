@@ -9,8 +9,8 @@ from db.db import BaseModel
 from .user import User
 
 class PrivacyStatusEnum(enum.Enum):
-    public = 0
-    private = 1
+    public = 'public'
+    private = 'private'
 
 
 class Link(BaseModel):
