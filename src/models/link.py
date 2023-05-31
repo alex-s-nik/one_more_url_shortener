@@ -18,7 +18,7 @@ class Link(BaseModel):
 
     original_url = Column(String, nullable=False)
     shorten_url = Column(String, primary_key=True)
-    created_by = Column(Integer, ForeignKey(User.id), nullable=False)
+    created_by = Column(Integer, ForeignKey(User.id))
     status = Column(Enum(PrivacyStatusEnum), nullable=False, default=PrivacyStatusEnum.public)
     is_deleted = Column(Boolean, nullable=False, default=False)
 

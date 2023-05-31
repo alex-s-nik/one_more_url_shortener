@@ -1,13 +1,14 @@
 from fastapi import Request, Response, status
-from starlette.middleware.base import BaseHTTPMiddleware
+
 
 from core.config import BLACKLIST
-
-class BlacklistMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app) -> None:
-        self.blacklist = BLACKLIST
     
-    async def dispatch(self, request: Request, call_next: callable):
+
+class BlacklistMiddleware:
+    def __init__(self):
+        self.blacklist = BLACKLIST
+
+    async def __call__(self, request: Request, call_next):
         if request.client.host in self.blacklist:
             return Response(
                 'You are in blacklist',

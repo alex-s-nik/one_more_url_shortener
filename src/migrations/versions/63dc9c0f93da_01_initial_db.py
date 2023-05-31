@@ -1,8 +1,8 @@
 """01_initial-db
 
-Revision ID: 14908cfa400c
+Revision ID: 63dc9c0f93da
 Revises: 
-Create Date: 2023-05-29 09:33:05.073848
+Create Date: 2023-05-29 15:05:56.468543
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '14908cfa400c'
+revision = '63dc9c0f93da'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,7 +31,7 @@ def upgrade() -> None:
     op.create_table('links',
     sa.Column('original_url', sa.String(), nullable=False),
     sa.Column('shorten_url', sa.String(), nullable=False),
-    sa.Column('created_by', sa.Integer(), nullable=False),
+    sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('status', sa.Enum('public', 'private', name='privacystatusenum'), nullable=False),
     sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['created_by'], ['user.id'], ),
