@@ -1,9 +1,8 @@
 import random
 import string
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import HTTPException, status
-from pydantic import HttpUrl
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +10,8 @@ from core.config import SHORTEN_URL_LEN
 from models.link import Link, RequestsHistory, PrivacyStatusEnum
 from models.user import User
 
-from schemas.link import DBLink, RequestsHistoryDB, FullInfoLinks
+from schemas.link import RequestsHistoryDB, FullInfoLinks
+
 
 async def create_link(
         new_link: Link,
@@ -32,13 +32,14 @@ async def create_link(
 
     return db_link
 
+
 async def get_original_link_by_shorten(
         shorten_url: str,
         user: User,
         session: AsyncSession
 ) -> Link:
-    """Get link record by shorten link"""
-    statement = select(Link).where(Link.shorten_url==shorten_url)
+    """Получение записи из БД по короткой ссылке."""
+    statement = select(Link).where(Link.shorten_url == shorten_url)
     results = await session.execute(statement=statement)
     original_link = results.scalar_one()
     if original_link.status == PrivacyStatusEnum.private and user != original_link.created_by:
@@ -47,17 +48,19 @@ async def get_original_link_by_shorten(
 
 
 async def make_shorten_url(session: AsyncSession) -> str:
+    """Генерация короткой ссылки и проверка, что ее нет в БД"""
     def generate_short_name():
+        """Генерация тела короткой ссылки."""
         return ''.join(
             random.choice(
                 string.ascii_lowercase + string.digits
             )
             for _ in range(SHORTEN_URL_LEN)
         )
-    
+
     while True:
         shorten_url = generate_short_name()
-        statement = select(Link).where(Link.shorten_url==shorten_url)
+        statement = select(Link).where(Link.shorten_url == shorten_url)
         is_short_url_exists = (await session.execute(statement)).scalars().all()
         if not is_short_url_exists:
             break
@@ -65,37 +68,50 @@ async def make_shorten_url(session: AsyncSession) -> str:
     return shorten_url
 
 
-async def get_all_links_by_user(user: User, session: AsyncSession):
-    """Get all links created by user"""
-    statement = select(Link).where(Link.created_by==user)
+async def get_all_links_by_user(user: User, session: AsyncSession) -> List[Link]:
+    """Получение всех ссылок, созданных пользователем."""
+    statement = select(Link).where(Link.created_by == user)
     results = await session.execute(statement)
     return results
 
 
 async def get_jumps_count_by_link(shorten_url: str, session: AsyncSession) -> int:
-    # вернуть количество переходов по ссылке
-    statement = select(func.count("*")).select_from(RequestsHistory).where(RequestsHistory.link==shorten_url)
-    #statement = select(RequestsHistory).where(RequestsHistory.link==shorten_url).count()
+    """Получение количества переходов по ссылке."""
+    statement = select(func.count("*")).select_from(
+        RequestsHistory
+    ).where(RequestsHistory.link == shorten_url)
+
     result = await session.execute(statement)
     return result.scalar_one()
 
 
-async def get_full_info_about_link(shorten_url: str, user: User, session: AsyncSession, fullinfo: Optional[str], limit: int, offset: int) -> FullInfoLinks:
-    # вернуть полную информацию о переходах по ссылке
+async def get_full_info_about_link(
+        shorten_url: str,
+        user: User,
+        session: AsyncSession,
+        fullinfo: Optional[str],
+        limit: int, offset: int
+) -> FullInfoLinks:
+    """Получение полной информации о ссылке: сколько раз был сделан переход по ней и информация по каждому переходу"""
     current_link = await get_original_link_by_shorten(shorten_url)
 
     if current_link.status == PrivacyStatusEnum.private and current_link.created_by != user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    
+
     count = await get_jumps_count_by_link(shorten_url, session)
 
     if not isinstance(fullinfo, str):
         return count
-    statement = select(RequestsHistory).where(RequestsHistory.link==shorten_url).limit(limit).offset(offset)
+    statement = select(
+        RequestsHistory
+    ).where(RequestsHistory.link == shorten_url).limit(limit).offset(offset)
+
     full_links_info = await session.execute(statement)
     return full_links_info
 
+
 async def delete_link(shorten_url: str, user: User, session: AsyncSession):
+    """Удаление ссылки. Физическое удаление ссылки из БД не производится, только помечается удаленной."""
     current_link = get_original_link_by_shorten(shorten_url, user, session)
     if current_link.created_by != user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -109,7 +125,8 @@ async def add_to_requests_history(
         client: str,
         session: AsyncSession
 ):
-    new_record_dict = RequestsHistoryDB(client=client,link=shorten_url).dict()
+    """Создание информации о факте перехода по ссылке."""
+    new_record_dict = RequestsHistoryDB(client=client, link=shorten_url).dict()
     db_record = RequestsHistory(**new_record_dict)
     session.add(db_record)
 
@@ -122,6 +139,8 @@ async def update_link(
         user: User,
         session: AsyncSession
 ):
+    """Обновление статуса ссылки. Можно изменить только статус ссылки.
+    Метод доступен только для зарегистрированных пользователей."""
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     current_link = await get_original_link_by_shorten(

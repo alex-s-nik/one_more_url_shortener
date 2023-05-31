@@ -6,8 +6,10 @@ from services.tools import ping
 
 router = APIRouter()
 
+
 @router.get('/ping')
 async def ping() -> Any:
+    """Проверка доступности БД."""
     if ping():
         return Response(
             'DB is available',

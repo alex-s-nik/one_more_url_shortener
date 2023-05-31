@@ -1,6 +1,4 @@
-from http import HTTPStatus
-
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.user import auth_backend, current_user, fastapi_users
@@ -28,12 +26,14 @@ router.include_router(
     tags=['users'],
 )
 
-router.get(
-    '/user/status',    
+
+@router.get(
+    '/user/status',
 )
 async def all_user_links(
-    user: User = Depends(current_user),
-    session: AsyncSession = Depends(get_session)
+        user: User = Depends(current_user),
+        session: AsyncSession = Depends(get_session)
 ):
+    """Получение всех ссылок пользователя."""
     links = await get_all_links_by_user(user, session)
     return links

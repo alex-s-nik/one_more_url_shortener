@@ -29,4 +29,4 @@ class AppSettings(BaseSettings):
         env_file = '.env'
 
 
-app_settings = AppSettings() 
+app_settings = AppSettings()

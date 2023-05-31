@@ -3,12 +3,13 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 
 from db.db import BaseModel
 from .user import User
 
+
 class PrivacyStatusEnum(enum.Enum):
+    """Тип приватности ссылок."""
     public = 'public'
     private = 'private'
 
@@ -25,6 +26,7 @@ class Link(BaseModel):
 
 class RequestsHistory(BaseModel):
     __tablename__ = 'requests_history'
+
     id = Column(Integer, primary_key=True)
     event_date = Column(DateTime, nullable=False, default=datetime.now)
     client = Column(String)

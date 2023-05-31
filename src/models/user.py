@@ -6,4 +6,3 @@ from db.db import BaseModel
 
 class User(SQLAlchemyBaseUserTable[int], BaseModel):
     id = Column(Integer, primary_key=True)
-
