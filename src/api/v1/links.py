@@ -59,7 +59,7 @@ async def get_link(
 
 
 @router.get('/{shorten_url}/status')
-async def status(
+async def status_link(
         shorten_url: str,
         full_info: Optional[str] = None,
         offset: int = 0,

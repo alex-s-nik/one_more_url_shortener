@@ -3,7 +3,8 @@ import string
 from typing import List, Optional
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import SHORTEN_URL_LEN
@@ -41,7 +42,10 @@ async def get_original_link_by_shorten(
     """Получение записи из БД по короткой ссылке."""
     statement = select(Link).where(Link.shorten_url == shorten_url)
     results = await session.execute(statement=statement)
-    original_link = results.scalar_one()
+    try:
+        original_link = results.scalar_one()
+    except NoResultFound:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     if original_link.status == PrivacyStatusEnum.private and user != original_link.created_by:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return original_link
@@ -93,7 +97,7 @@ async def get_full_info_about_link(
         limit: int, offset: int
 ) -> FullInfoLinks:
     """Получение полной информации о ссылке: сколько раз был сделан переход по ней и информация по каждому переходу"""
-    current_link = await get_original_link_by_shorten(shorten_url)
+    current_link = await get_original_link_by_shorten(shorten_url, user, session)
 
     if current_link.status == PrivacyStatusEnum.private and current_link.created_by != user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -112,11 +116,11 @@ async def get_full_info_about_link(
 
 async def delete_link(shorten_url: str, user: User, session: AsyncSession):
     """Удаление ссылки. Физическое удаление ссылки из БД не производится, только помечается удаленной."""
-    current_link = get_original_link_by_shorten(shorten_url, user, session)
+    current_link = await get_original_link_by_shorten(shorten_url, user, session)
     if current_link.created_by != user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    current_link.is_deleted = True
-    await session.add(current_link)
+    statement = update(Link).where(Link.shorten_url==shorten_url).values(is_deleted=True)
+    await session.execute(statement)
     await session.commit()
 
 

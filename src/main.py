@@ -1,7 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
+from starlette.middleware.base import BaseHTTPMiddleware
 
-from api.v1.links import router
+from api.v1 import router
+
 from core import config
 from core.config import app_settings
 from middlewares.blacklist import BlacklistMiddleware
@@ -14,6 +16,7 @@ app = FastAPI(
 )
 
 blacklist_middleware = BlacklistMiddleware()
+app.add_middleware(BaseHTTPMiddleware, dispatch=blacklist_middleware)
 app.include_router(router, prefix='/api/v1')
 
 if __name__ == '__main__':

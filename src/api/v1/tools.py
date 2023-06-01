@@ -8,9 +8,9 @@ router = APIRouter()
 
 
 @router.get('/ping')
-async def ping() -> Any:
+async def ping_db() -> Any:
     """Проверка доступности БД."""
-    if ping():
+    if await ping():
         return Response(
             'DB is available',
             status.HTTP_200_OK
