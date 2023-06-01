@@ -119,7 +119,7 @@ async def delete_link(shorten_url: str, user: User, session: AsyncSession):
     current_link = await get_original_link_by_shorten(shorten_url, user, session)
     if current_link.created_by != user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    statement = update(Link).where(Link.shorten_url==shorten_url).values(is_deleted=True)
+    statement = update(Link).where(Link.shorten_url == shorten_url).values(is_deleted=True)
     await session.execute(statement)
     await session.commit()
 

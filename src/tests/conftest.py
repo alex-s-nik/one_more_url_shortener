@@ -10,6 +10,7 @@ from core.user import current_user
 
 user = User()
 
+
 @pytest.fixture
 def user_client():
     app.dependency_overrides = {}
@@ -21,12 +22,13 @@ def user_client():
 @pytest.fixture
 def link():
     return Link(
-        original_url = 'https://python.org',
-        shorten_url = 'abcd',
-        created_by = None,
-        status = PrivacyStatusEnum.public,
-        is_deleted = False
+        original_url='https://python.org',
+        shorten_url='abcd',
+        created_by=None,
+        status=PrivacyStatusEnum.public,
+        is_deleted=False
     )
+
 
 @pytest.fixture(scope='session')
 def event_loop():

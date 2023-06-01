@@ -1,10 +1,7 @@
-import pytest
-
-from fastapi import Request, status
+from fastapi import status
 from httpx import AsyncClient
 
 from main import app
-
 
 
 async def test_create_link(event_loop):
@@ -46,6 +43,7 @@ async def test_get_link():
         response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     ), "Статус код при переходе по короткой ссылке не соответствует требуемому"
 
+
 async def test_get_link_status():
     async with AsyncClient(app=app, base_url="http://127.0.0.1:8000/api/v1") as ac:
         response = await ac.post(
@@ -61,7 +59,6 @@ async def test_get_link_status():
         )
         response = await ac.get(f'/{short_url}/status')
     assert response.json() == 1
-    
 
 
 async def test_delete_link():
