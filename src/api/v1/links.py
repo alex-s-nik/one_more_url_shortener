@@ -1,6 +1,6 @@
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Depends, Response, status, Request
+from fastapi import APIRouter, Depends, Path, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -62,8 +62,8 @@ async def get_link(
 async def status_link(
         shorten_url: str,
         full_info: Optional[str] = None,
-        offset: int = 0,
-        limit: int = 10,
+        offset: Annotated[int, Path(ge=0)] = 0,
+        limit: Annotated[int, Path(ge=0)] = 10,
         user: User = Depends(current_user),
         session: AsyncSession = Depends(get_async_session)
 ) -> Any:
