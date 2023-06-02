@@ -1,15 +1,11 @@
 import os
 from logging import config as logging_config
 
-from pydantic import BaseSettings, PostgresDsn
+from pydantic import BaseSettings, Field, PostgresDsn
 
 from core.logger import LOGGING
 
 logging_config.dictConfig(LOGGING)
-
-PROJECT_NAME = os.getenv('PROJECT_NAME', 'url_shortener')
-PROJECT_HOST = os.getenv('PROJECT_HOST', '0.0.0.0')
-PROJECT_PORT = int(os.getenv('PROJECT_PORT', '8000'))
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,6 +19,10 @@ SHORTEN_URL_LEN = 6
 class AppSettings(BaseSettings):
     app_title: str = "LibraryApp"
     database_dsn: PostgresDsn
+    engine_echo: bool = Field(True, env='ENGINE_ECHO')
+    project_name: str = Field('url_shortener', env='PROJECT_NAME')
+    project_host: str = Field('0.0.0.0', env='PROJECT_HOST')
+    project_port: int = Field(8000, env='PROJECT_PORT')
     secret: str = 'SECRET_WORD'
 
     class Config:
