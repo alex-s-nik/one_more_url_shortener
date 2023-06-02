@@ -1,8 +1,8 @@
 """01_initial-db
 
-Revision ID: 563537554fc3
+Revision ID: 55d312337ce6
 Revises: 
-Create Date: 2023-05-31 09:13:08.682032
+Create Date: 2023-06-02 13:59:31.395610
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '563537554fc3'
+revision = '55d312337ce6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,8 +29,8 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_table('links',
-    sa.Column('original_url', sa.String(), nullable=False),
-    sa.Column('shorten_url', sa.String(), nullable=False),
+    sa.Column('original_url', sa.Text(), nullable=False),
+    sa.Column('shorten_url', sa.String(length=6), nullable=False),
     sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('status', sa.Enum('public', 'private', name='privacystatusenum'), nullable=False),
     sa.Column('is_deleted', sa.Boolean(), nullable=False),
@@ -38,11 +38,11 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('shorten_url')
     )
     op.create_table('requests_history',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('event_date', sa.DateTime(), nullable=False),
-    sa.Column('client', sa.String(), nullable=True),
-    sa.Column('link', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['link'], ['links.shorten_url'], ),
+    sa.Column('client', sa.Text(), nullable=True),
+    sa.Column('link', sa.String(length=6), nullable=True),
+    sa.ForeignKeyConstraint(['link'], ['links.shorten_url'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
