@@ -23,7 +23,8 @@ router = APIRouter()
 @router.post(
     '/',
     response_model=DBLink,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    summary='Создание короткой ссылки'
 )
 async def create(
         new_link: CreateLink,
@@ -36,7 +37,8 @@ async def create(
 
 
 @router.get(
-    '/{shorten_url}'
+    '/{shorten_url}',
+    summary='Переход по короткой ссылке'
 )
 async def get_link(
         shorten_url: str,
@@ -58,7 +60,10 @@ async def get_link(
     return RedirectResponse(original_link.original_url)
 
 
-@router.get('/{shorten_url}/status')
+@router.get(
+        '/{shorten_url}/status',
+        summary='Статус ссылки'
+)
 async def status_link(
         shorten_url: str,
         full_info: Optional[str] = None,
@@ -73,7 +78,10 @@ async def status_link(
     return status
 
 
-@router.delete('/{shorten_url}')
+@router.delete(
+        '/{shorten_url}',
+        summary='Статус ссылки'
+)
 async def delete(
         shorten_url: str,
         session: AsyncSession = Depends(get_async_session),
@@ -86,7 +94,8 @@ async def delete(
 
 @router.patch(
     '/{shorten_url}',
-    response_model=DBLink
+    response_model=DBLink,
+    summary='Изменение статуса ссылки'
 )
 async def update(
         shorten_url: str,

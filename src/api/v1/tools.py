@@ -7,7 +7,10 @@ from services.tools import ping
 router = APIRouter()
 
 
-@router.get('/ping')
+@router.get(
+        '/ping',
+        summary='Доступность БД'
+)
 async def ping_db() -> Any:
     """Проверка доступности БД."""
     if await ping():

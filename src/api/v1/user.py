@@ -29,6 +29,8 @@ router.include_router(
 
 @router.get(
     '/user/status',
+    tags=['links', 'users'],
+    summary='Все ссылки пользователя'
 )
 async def all_user_links(
         user: User = Depends(current_user),
